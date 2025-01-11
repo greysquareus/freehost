@@ -8,6 +8,7 @@ DOMAIN=my_freehost.local
 
 sudo apt update
 sudo apt install -y apache2 mysql-server php libapache2-mod-php php-curl php-gd php-intl php-mbstring php-soap php-xml php-zip php-mysql php-cli nginx wget
+sudo echo "${IP} ${DOMAIN} " >> /etc/hosts
 
 sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$PASSWORD';"
 sudo mysql -u root -e "FLUSH PRIVILEGES;"
@@ -22,13 +23,23 @@ sudo chown -R www-data:www-data /var/www/html
 sudo chmod -R 755 /var/www/html
 sudo rm -f /var/www/html/index.html
 
+
 sudo a2enmod proxy proxy_fcgi setenvif
-sudo mkdir -p $APACHE_LOG_DIR
-echo "Listen 8080" | sudo tee -a /etc/apache2/ports.conf > /dev/null
+sudo mkdir -p ${APACHE_LOG_DIR}
+cat <<EOF | sudo tee -a /etc/apache2/ports.conf > /dev/null
+Listen 8080
+<IfModule ssl_module>
+        Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+        Listen 443
+</IfModule>
+EOF
 
 cat <<EOF | sudo tee /etc/apache2/sites-available/wordpress.conf > /dev/null
 <VirtualHost *:8080>
-    ServerName $DOMAIN
+    ServerName ${DOMAIN}
     DocumentRoot /var/www/html
 
     <Directory /var/www/html>
@@ -47,7 +58,7 @@ sudo systemctl restart apache2
 cat <<EOF | sudo tee /etc/nginx/sites-available/wordpress.conf > /dev/null
 server {
     listen 80;
-    server_name $DOMAIN;
+    server_name ${DOMAIN};
 
     root /var/www/html;
     index index.php index.html index.htm;
