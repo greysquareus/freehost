@@ -1,5 +1,7 @@
 #!/bin/bash
 
+###Last version###
+
 PASSWORD="q1w2e3r4t5y6"
 MYSQL_PASSWORD="root"
 IP=$(hostname -I | awk '{print $1}')
@@ -56,7 +58,7 @@ fi
 cat <<EOF | sudo tee /etc/nginx/sites-available/wordpress.conf > /dev/null
 server {
     listen 80;
-    server_name $DOMAIN;
+    server_name my_freehost.com;
 
     root /var/www/html;
     index index.php index.html index.htm;
@@ -76,7 +78,10 @@ server {
         deny all;
     }
 }
+
+
 EOF
 
+sudo rm -f /etc/nginx/sites-enabled/default
 sudo ln -s /etc/nginx/sites-available/wordpress.conf /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl restart nginx
