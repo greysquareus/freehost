@@ -25,11 +25,12 @@ sudo rm -f /var/www/html/index.html
 sudo a2enmod proxy proxy_fcgi setenvif
 sudo mkdir -p $APACHE_LOG_DIR
 
-sudo sed -i '1i Listen 8080' /etc/apache2/ports.conf
+sudo sed -i '/Listen 80/d' /etc/apache2/ports.conf
+sudo sed -i '5i Listen 8080' /etc/apache2/ports.conf
 
 cat <<EOF | sudo tee /etc/apache2/sites-available/wordpress.conf > /dev/null
 <VirtualHost *:8080>
-    ServerName ${DOMAIN}
+    ServerName $DOMAIN
     DocumentRoot /var/www/html
 
     <Directory /var/www/html>
@@ -37,8 +38,8 @@ cat <<EOF | sudo tee /etc/apache2/sites-available/wordpress.conf > /dev/null
         Require all granted
     </Directory>
 
-    ErrorLog \${APACHE_LOG_DIR}/error.log
-    CustomLog \${APACHE_LOG_DIR}/access.log combined
+    ErrorLog \$APACHE_LOG_DIR/error.log
+    CustomLog \$APACHE_LOG_DIR/access.log combined
 </VirtualHost>
 EOF
 
@@ -55,7 +56,7 @@ fi
 cat <<EOF | sudo tee /etc/nginx/sites-available/wordpress.conf > /dev/null
 server {
     listen 80;
-    server_name ${$DOMAIN};
+    server_name $DOMAIN;
 
     root /var/www/html;
     index index.php index.html index.htm;
